@@ -33,13 +33,11 @@ func New(r io.Reader) *Parser {
 func (p *Parser) Parse(h Handler) error {
 
 	for p.scanner.Scan() {
-		seg := spec.Segment(p.scanner.Text())
+		token := p.scanner.Text()
 
 		p.segmentNr++
-		if strings.ContainsAny(string(seg), "\r\n") {
-			p.lineNr++
-		}
-		seg = spec.Segment(strings.TrimSpace(string(seg)))
+		p.lineNr += strings.Count(token, "\n")
+		seg := spec.Segment(strings.TrimSpace(token))
 
 		if seg.Tag() == "UNH" {
 			p.node = spec.Get(seg.Elem(2).Comp(0))

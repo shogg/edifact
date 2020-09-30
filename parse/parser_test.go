@@ -1,10 +1,11 @@
-package parse
+package parse_test
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/shogg/edifact/parse"
 	"github.com/shogg/edifact/spec"
 )
 
@@ -27,8 +28,7 @@ UNZ+1+1234567'
 `
 
 func TestParser(t *testing.T) {
-
-	p := New(strings.NewReader(ediMessage1))
+	p := parse.New(strings.NewReader(ediMessage1))
 	h := testHandler{}
 	if err := p.Parse(&h); err != nil {
 		t.Fatal(err)

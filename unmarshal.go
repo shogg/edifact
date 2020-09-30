@@ -12,7 +12,7 @@ type Unmarshaller interface {
 	UnmarshalEdifact(data []byte) error
 }
 
-// Unmarshal edifact document into data structure.
+// Unmarshal edifact document into target data structure.
 func Unmarshal(r io.Reader, target interface{}) error {
 	h := &build.Handler{Target: target}
 	return parse.New(r).Parse(h)
