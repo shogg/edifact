@@ -1,4 +1,4 @@
-package edifact
+package spec
 
 import (
 	"regexp"

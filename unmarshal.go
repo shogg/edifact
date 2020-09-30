@@ -1,13 +1,19 @@
 package edifact
 
-import "io"
+import (
+	"io"
 
-// Unmarshaller interface
+	"github.com/shogg/edifact/internal/build"
+	"github.com/shogg/edifact/parse"
+)
+
+// Unmarshaller interface for custom data types.
 type Unmarshaller interface {
 	UnmarshalEdifact(data []byte) error
 }
 
 // Unmarshal edifact document into data structure.
 func Unmarshal(r io.Reader, target interface{}) error {
-	return nil
+	h := &build.Handler{Target: target}
+	return parse.New(r).Parse(h)
 }

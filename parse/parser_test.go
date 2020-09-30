@@ -1,4 +1,4 @@
-package edifact
+package parse
 
 import (
 	"fmt"
@@ -28,16 +28,16 @@ UNZ+1+1234567'
 
 func TestParser(t *testing.T) {
 
-	p := newParser(strings.NewReader(ediMessage1))
+	p := New(strings.NewReader(ediMessage1))
 	h := testHandler{}
-	if err := p.parse(&h); err != nil {
+	if err := p.Parse(&h); err != nil {
 		t.Fatal(err)
 	}
 }
 
 type testHandler struct{}
 
-func (h *testHandler) Handle(node *spec.Node, s Segment) error {
+func (h *testHandler) Handle(node *spec.Node, s spec.Segment) error {
 	fmt.Printf("%s%s\n", formatSegmentGroups(node), s)
 	return nil
 }

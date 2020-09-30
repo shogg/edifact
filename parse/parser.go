@@ -1,4 +1,4 @@
-package edifact
+package parse
 
 import (
 	"bufio"
@@ -10,34 +10,36 @@ import (
 	"github.com/shogg/edifact/spec"
 )
 
-// parser parses edifact messages.
-type parser struct {
+// Parser parses edifact messages.
+type Parser struct {
 	scanner   *bufio.Scanner
 	node      *spec.Node
 	lineNr    int
 	segmentNr int
 }
 
-func newParser(r io.Reader) *parser {
+// New creates a parser.
+func New(r io.Reader) *Parser {
 
 	s := bufio.NewScanner(r)
 	s.Split(segments('\''))
 
-	return &parser{
+	return &Parser{
 		scanner: s,
 	}
 }
 
-func (p *parser) parse(h Handler) error {
+// Parse parses an edifact document.
+func (p *Parser) Parse(h Handler) error {
 
 	for p.scanner.Scan() {
-		seg := Segment(p.scanner.Text())
+		seg := spec.Segment(p.scanner.Text())
 
 		p.segmentNr++
 		if strings.ContainsAny(string(seg), "\r\n") {
 			p.lineNr++
 		}
-		seg = Segment(strings.TrimSpace(string(seg)))
+		seg = spec.Segment(strings.TrimSpace(string(seg)))
 
 		if seg.Tag() == "UNH" {
 			p.node = spec.Get(seg.Elem(2).Comp(0))
@@ -59,7 +61,7 @@ func (p *parser) parse(h Handler) error {
 	return p.annotate(p.scanner.Err())
 }
 
-func (p *parser) annotate(err error) error {
+func (p *Parser) annotate(err error) error {
 	return fmt.Errorf("line %d, segment %d: %w", p.lineNr, p.segmentNr, err)
 }
 
@@ -70,7 +72,7 @@ func segments(del byte) bufio.SplitFunc {
 			if len(bytes.TrimSpace(data)) == 0 {
 				return len(data), nil, nil
 			}
-			return 0, nil, ErrMissingSegmentDelimiter
+			return 0, nil, ErrMissingSegmentTerminator
 		}
 		return index + 1, data[:index+1], nil
 	}
