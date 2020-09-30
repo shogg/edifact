@@ -1,6 +1,6 @@
 package spec
 
-// Node segment meta-data in a message format specification
+// Node part of message format spec
 type Node struct {
 	Tag          string
 	Type         Type
@@ -34,7 +34,7 @@ const (
 
 // Msg creates a message node.
 func Msg(tag string, children ...*Node) *Node {
-	return newNode(Message, tag, M, 1, children)
+	return newNode(Message, tag, C, 1, children)
 }
 
 // S creates a segment node.
@@ -58,7 +58,7 @@ func newNode(nodeType Type, tag string, p Required, max int, children []*Node) *
 		FirstChild:   nil,
 		Sibling:      nil,
 		SegmentGroup: nil,
-		Level:        -1,
+		Level:        0,
 	}
 
 	lenChildren := len(children)
@@ -67,10 +67,9 @@ func newNode(nodeType Type, tag string, p Required, max int, children []*Node) *
 	}
 
 	for i, c := range children {
+		c.Parent = n
 		if i+1 < lenChildren {
 			c.Sibling = children[i+1]
-		} else {
-			c.Parent = n
 		}
 		if n.Type == SegmentGroup {
 			c.SegmentGroup = n
@@ -78,4 +77,30 @@ func newNode(nodeType Type, tag string, p Required, max int, children []*Node) *
 	}
 
 	return n
+}
+
+// SegmentGroups all segment groups.
+func (node *Node) SegmentGroups() []*Node {
+
+	if node == nil {
+		return nil
+	}
+
+	count := 0
+	sg := node.SegmentGroup
+	for sg != nil {
+		count++
+		sg = sg.SegmentGroup
+	}
+
+	result := make([]*Node, count)
+	sg = node.SegmentGroup
+	i := count - 1
+	for sg != nil {
+		result[i] = sg
+		sg = sg.SegmentGroup
+		i--
+	}
+
+	return result
 }

@@ -6,12 +6,11 @@ import (
 )
 
 type (
-	// Segment sequence of elements joined by + ending in '
+	// Segment is a sequence of elements joined by + ending in '
 	Segment string
-	// Element sequence of components joined by :
+	// Element is a sequence of components joined by :
 	Element string
-	// Component string value
-	Component string
+	// Component string
 )
 
 var (

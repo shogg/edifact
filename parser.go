@@ -3,23 +3,19 @@ package edifact
 import (
 	"bufio"
 	"bytes"
+	"fmt"
 	"io"
+	"strings"
 
-	"github.com/shogg/edifact/internal/sgstack"
 	"github.com/shogg/edifact/spec"
 )
 
 // parser parses edifact messages.
 type parser struct {
-	scanner *bufio.Scanner
-	state   state
-}
-
-// state holds the current parser state.
-type state struct {
-	node          *spec.Node
-	segmentNr     int
-	segmentGroups []*spec.Node
+	scanner   *bufio.Scanner
+	node      *spec.Node
+	lineNr    int
+	segmentNr int
 }
 
 func newParser(r io.Reader) *parser {
@@ -36,31 +32,35 @@ func (p *parser) parse(h Handler) error {
 
 	for p.scanner.Scan() {
 		seg := Segment(p.scanner.Text())
+
+		p.segmentNr++
+		if strings.ContainsAny(string(seg), "\r\n") {
+			p.lineNr++
+		}
+		seg = Segment(strings.TrimSpace(string(seg)))
+
 		if seg.Tag() == "UNH" {
-			p.state.node = spec.Get(seg.Elem(2).Comp(0))
+			p.node = spec.Get(seg.Elem(2).Comp(0))
 		}
 
-		if p.state.node != nil {
-			next, err := p.state.node.Transition(seg.Tag())
+		if p.node != nil {
+			next, err := p.node.Transition(seg.Tag())
 			if err != nil {
-				return err
+				return p.annotate(err)
 			}
-			if p.state.node.Level < next.Level {
-				sgstack.Push(&p.state.segmentGroups, next.SegmentGroup)
-			} else if p.state.node.Level > next.Level {
-				for sgstack.Pop(&p.state.segmentGroups).Tag != next.SegmentGroup.Tag {
-				}
-			}
-
-			p.state.node = next
+			p.node = next
 		}
 
-		if err := h.Handle(p.state.segmentGroups, seg); err != nil {
-			return err
+		if err := h.Handle(p.node, seg); err != nil {
+			return p.annotate(err)
 		}
 	}
 
-	return p.scanner.Err()
+	return p.annotate(p.scanner.Err())
+}
+
+func (p *parser) annotate(err error) error {
+	return fmt.Errorf("line %d, segment %d: %w", p.lineNr, p.segmentNr, err)
 }
 
 func segments(del byte) bufio.SplitFunc {
@@ -72,7 +72,6 @@ func segments(del byte) bufio.SplitFunc {
 			}
 			return 0, nil, ErrMissingSegmentDelimiter
 		}
-		token = bytes.TrimLeft(data[:index+1], "\r\n\t ")
-		return index + 1, token, nil
+		return index + 1, data[:index+1], nil
 	}
 }

@@ -16,28 +16,14 @@ func TestTransition(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sg1, err := bgm.Transition("RFF")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if sg1 == nil || sg1.Tag != "SG1" {
-		t.Error("SG1 expected")
-	}
-	rff, err := sg1.Transition("RFF")
+	rff, err := bgm.Transition("RFF")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if rff == nil || rff.Tag != "RFF" {
 		t.Error("RFF expected")
 	}
-	sg2, err := rff.Transition("NAD")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if sg2 == nil || sg2.Tag != "SG2" {
-		t.Error("SG2 expected")
-	}
-	nad, err := sg2.Transition("NAD")
+	nad, err := rff.Transition("NAD")
 	if err != nil {
 		t.Fatal(err)
 	}

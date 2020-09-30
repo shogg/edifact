@@ -1,39 +1,33 @@
 package spec
 
+import (
+	"fmt"
+)
+
 // Transition switch to next node with matching segment tag.
-// If the node is in a different segment group
-// switch to the node of the segment group.
 func (node *Node) Transition(tag string) (*Node, error) {
 
 	if node.Tag == tag {
 		return node, nil
 	}
 
-	var sg *Node
 	var s *Node
 	node.iterate(func(n *Node) bool {
-		switch n.Type {
-		case SegmentGroup:
-			sg = n
-		case Segment:
-			if n.Tag == tag {
-				s = n
-				return false
-			}
+		if n.Type == Segment && n.Tag == tag {
+			s = n
+			return false
 		}
 		return true
 	})
 
-	if sg != nil && s != nil {
-		return sg, nil
+	if s == nil {
+		return nil, fmt.Errorf("%w: %s", ErrUnexpectedSegment, tag)
 	}
-	if s != nil {
-		return s, nil
-	}
-	return nil, ErrUndefinedSegment
+	return s, nil
 }
 
-// iteration order: (1) child, (2) sibling, (3) parent sibling. Recursion in this order.
+// Iteration order: (1) child, (2) sibling, (3) parent sibling.
+// If parent is a group repeat the group.
 // --->o -->o
 //  (1)|  \
 //     v   \(3)
@@ -51,7 +45,7 @@ func (node *Node) iterate(f func(*Node) bool) {
 			n.Sibling.Level = n.Level
 			n = n.Sibling
 		} else {
-			n = n.parentSibling()
+			n = n.parentSibling(true)
 			if n == nil {
 				return
 			}
@@ -62,16 +56,22 @@ func (node *Node) iterate(f func(*Node) bool) {
 		}
 
 		if n.Required == M {
-			n = n.parentSibling()
+			n = n.parentSibling(false)
+			if !f(n) {
+				return
+			}
 		}
 	}
 }
 
-func (node *Node) parentSibling() *Node {
+func (node *Node) parentSibling(loop bool) *Node {
 	n := node
 	level := node.Level
 	for n.Parent != nil {
 		n = n.Parent
+		if loop && n.Type == SegmentGroup {
+			return n
+		}
 		level--
 		if n.Sibling != nil {
 			n.Sibling.Level = level

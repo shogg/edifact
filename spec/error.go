@@ -9,14 +9,16 @@ type Error int
 
 // errors
 const (
-	ErrUndefinedSegment Error = iota
+	ErrUnexpectedSegment Error = iota
 )
 
 func (e Error) Error() string {
-	switch e {
-	case ErrUndefinedSegment:
-		return "ErrUndefinedSegment"
-	default:
-		return fmt.Sprintf("spec.Error(%d)", e)
+	if msg, ok := errMessages[e]; ok {
+		return msg
 	}
+	return fmt.Sprintf("spec.Error(%d)", e)
+}
+
+var errMessages = map[Error]string{
+	ErrUnexpectedSegment: "unexpected segment",
 }
