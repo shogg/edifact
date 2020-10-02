@@ -39,3 +39,11 @@ func BenchmarkSegment(b *testing.B) {
 		_ = seg.Elem(2).Comp(3)
 	}
 }
+
+func BenchmarkTag(b *testing.B) {
+
+	seg := spec.Segment("UNH+1+?+ORDERS:D:96A:UN'")
+	for i := 0; i < b.N; i++ {
+		_ = seg.Tag()
+	}
+}

@@ -2,7 +2,6 @@ package spec
 
 import (
 	"bufio"
-	"regexp"
 	"strings"
 )
 
@@ -14,13 +13,13 @@ type (
 	// Component string
 )
 
-var (
-	regexTag = regexp.MustCompile(`^[^+]*`)
-)
-
 // Tag retrieves the segment tag.
 func (s Segment) Tag() string {
-	return regexTag.FindString(string(s))
+	i := strings.IndexByte(string(s), '+')
+	if i < 0 {
+		return string(s)
+	}
+	return string(s)[:i]
 }
 
 // Elem retrieves the ith element.
