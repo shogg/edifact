@@ -28,6 +28,9 @@ func (s Segment) Tag() string {
 func (s Segment) Elem(i int) Element {
 	elems := regexSplitElements.Split(string(s), -1)
 	elems = concatAtReleaseChar(elems)
+	if i >= len(elems) {
+		return ""
+	}
 	return Element(elems[i])
 }
 
@@ -35,6 +38,9 @@ func (s Segment) Elem(i int) Element {
 func (e Element) Comp(i int) string {
 	comps := regexSplitComponents.Split(string(e), -1)
 	comps = concatAtReleaseChar(comps)
+	if i >= len(comps) {
+		return ""
+	}
 	return comps[i]
 }
 
@@ -57,11 +63,12 @@ func concatAtReleaseChar(list []string) []string {
 	for i := range list {
 		var buf strings.Builder
 		buf.WriteString(list[i])
-		for j := i; j < len(list); j++ {
-			if list[j][len(list)-1] != '?' {
+		for j := i; j < len(list)-1; j++ {
+			if list[j][len(list[j])-1] != '?' {
 				break
 			}
-			buf.WriteString(list[j])
+			buf.WriteByte('+')
+			buf.WriteString(list[j+1])
 		}
 		result = append(result, buf.String())
 	}

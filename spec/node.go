@@ -156,7 +156,7 @@ func (node *Node) iterate(f func(*Node) bool) {
 
 		if n.Required == M {
 			n = n.parentSibling(false)
-			if !f(n) {
+			if n != nil && !f(n) {
 				return
 			}
 		}
