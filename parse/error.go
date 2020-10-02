@@ -16,7 +16,7 @@ func (e Error) Error() string {
 	if msg, ok := errMessages[e]; ok {
 		return msg
 	}
-	return fmt.Sprintf("spec.Error(%d)", e)
+	return fmt.Sprintf("parse.Error(%d)", e)
 }
 
 var errMessages = map[Error]string{

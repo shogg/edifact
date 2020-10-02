@@ -4,3 +4,7 @@ package spec
 func Get(name string) *Node {
 	return DESADV
 }
+
+// Add registers a new message specification.
+func Add(name string, root *Node) {
+}

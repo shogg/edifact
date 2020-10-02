@@ -16,7 +16,7 @@ type (
 var (
 	regexTag             = regexp.MustCompile(`^[^+]*`)
 	regexSplitElements   = regexp.MustCompile(`\+`)
-	regexSplitComponents = regexp.MustCompile(`\:`)
+	regexSplitComponents = regexp.MustCompile(`\:|'`)
 )
 
 // Tag retrieves the segment tag.
@@ -42,6 +42,9 @@ func concatAtReleaseChar(list []string) []string {
 
 	releaseChar := false
 	for i := range list {
+		if len(list[i]) == 0 {
+			continue
+		}
 		if list[i][len(list[i])-1] == '?' {
 			releaseChar = true
 		}

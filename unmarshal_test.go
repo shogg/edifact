@@ -30,20 +30,19 @@ func TestUnmarshal(t *testing.T) {
 		AuftragNr  string    `edifact:"SG1/RFF+100"`
 		BestellNr  string    `edifact:"SG1/RFF+300|301"`
 		Positionen []struct {
-			PositionNr  int `edifact:"SG10/LIN+?"`
-			Bezeichnung int `edifact:"SG10/LIN+++?:"`
+			PositionNr  int `edifact:"SG10/SG17/LIN+?"`
+			Bezeichnung int `edifact:"SG10/SG17/LIN+++?:"`
 			Anzahl      int `edifact:"SG10/QTY+?:"`
 		}
 	}
 
 	document := strings.NewReader(ediMessage)
-	ediData := TestMessage{}
-
+	var ediData []*TestMessage
 	if err := edifact.Unmarshal(document, &ediData); err != nil {
 		t.Fatal(err)
 	}
 
-	if len(ediData.Positionen) == 0 {
-		t.Error("expected positions")
+	if len(ediData) == 0 {
+		t.Error("data expected")
 	}
 }
