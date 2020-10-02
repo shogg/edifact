@@ -1,6 +1,7 @@
 package spec
 
 import (
+	"bufio"
 	"regexp"
 	"strings"
 )
@@ -14,9 +15,7 @@ type (
 )
 
 var (
-	regexTag             = regexp.MustCompile(`^[^+]*`)
-	regexSplitElements   = regexp.MustCompile(`\+`)
-	regexSplitComponents = regexp.MustCompile(`\:|'`)
+	regexTag = regexp.MustCompile(`^[^+]*`)
 )
 
 // Tag retrieves the segment tag.
@@ -26,52 +25,50 @@ func (s Segment) Tag() string {
 
 // Elem retrieves the ith element.
 func (s Segment) Elem(i int) Element {
-	elems := regexSplitElements.Split(string(s), -1)
-	elems = concatAtReleaseChar(elems)
-	if i >= len(elems) {
-		return ""
+	scanner := bufio.NewScanner(strings.NewReader(string(s)))
+	scanner.Split(delimiter('+'))
+
+	j := 0
+	for scanner.Scan() {
+		if j == i {
+			return Element(scanner.Text())
+		}
+		j++
 	}
-	return Element(elems[i])
+
+	return ""
 }
 
 // Comp retrieves the ith component.
 func (e Element) Comp(i int) string {
-	comps := regexSplitComponents.Split(string(e), -1)
-	comps = concatAtReleaseChar(comps)
-	if i >= len(comps) {
-		return ""
+	scanner := bufio.NewScanner(strings.NewReader(string(e)))
+	scanner.Split(delimiter(':'))
+
+	j := 0
+	for scanner.Scan() {
+		if j == i {
+			return scanner.Text()
+		}
+		j++
 	}
-	return comps[i]
+
+	return ""
 }
 
-func concatAtReleaseChar(list []string) []string {
-
-	releaseChar := false
-	for i := range list {
-		if len(list[i]) == 0 {
-			continue
-		}
-		if list[i][len(list[i])-1] == '?' {
-			releaseChar = true
-		}
-	}
-	if !releaseChar {
-		return list
-	}
-
-	result := make([]string, 0, len(list))
-	for i := range list {
-		var buf strings.Builder
-		buf.WriteString(list[i])
-		for j := i; j < len(list)-1; j++ {
-			if list[j][len(list[j])-1] != '?' {
-				break
+func delimiter(del byte) bufio.SplitFunc {
+	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		for i := range data {
+			if data[i] != del {
+				continue
 			}
-			buf.WriteByte('+')
-			buf.WriteString(list[j+1])
+			if i > 0 && data[i-1] == '?' {
+				continue
+			}
+			return i + 1, data[:i], nil
 		}
-		result = append(result, buf.String())
+		if len(data) > 0 && data[len(data)-1] == '\'' {
+			return len(data), data[:len(data)-1], nil
+		}
+		return len(data), data, nil
 	}
-
-	return result
 }

@@ -4,5 +4,5 @@ go 1.15
 
 require (
 	github.com/go-test/deep v1.0.7
-	golang.org/x/tools v0.0.0-20201002141543-22683886a977 // indirect
+	golang.org/x/perf v0.0.0-20200918155509-d949658356f9 // indirect
 )

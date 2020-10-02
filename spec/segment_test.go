@@ -21,6 +21,7 @@ func TestSegment(t *testing.T) {
 		{2, 0, "?+ORDERS"},
 		{2, 1, "D"},
 		{2, 3, "UN"},
+		{3, 0, ""},
 	}
 
 	for _, test := range tests {
