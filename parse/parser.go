@@ -18,26 +18,25 @@ type Parser struct {
 	segmentNr int
 }
 
-// New creates a parser.
-func New(r io.Reader) *Parser {
+// Parse parses an edifact document.
+func Parse(r io.Reader, h Handler) error {
 
 	s := bufio.NewScanner(r)
 	s.Split(segments('\''))
-
-	return &Parser{
-		scanner: s,
-	}
-}
-
-// Parse parses an edifact document.
-func (p *Parser) Parse(h Handler) error {
+	p := &Parser{scanner: s}
 
 	for p.scanner.Scan() {
 		token := p.scanner.Text()
 
 		p.segmentNr++
 		p.lineNr += strings.Count(token, "\n")
-		seg := spec.Segment(strings.TrimSpace(token))
+
+		token = strings.TrimSpace(token)
+		if token == "" {
+			continue
+		}
+
+		seg := spec.Segment(token)
 
 		if seg.Tag() == "UNH" {
 			p.node = spec.Get(seg.Elem(2).Comp(0))
@@ -49,10 +48,10 @@ func (p *Parser) Parse(h Handler) error {
 				return p.annotate(err)
 			}
 			p.node = next
-		}
 
-		if err := h.Handle(p.node, seg); err != nil {
-			return p.annotate(err)
+			if err := h.Handle(p.node, seg); err != nil {
+				return p.annotate(err)
+			}
 		}
 	}
 
@@ -60,15 +59,21 @@ func (p *Parser) Parse(h Handler) error {
 }
 
 func (p *Parser) annotate(err error) error {
+	if err == nil {
+		return nil
+	}
 	return fmt.Errorf("line %d, segment %d: %w", p.lineNr, p.segmentNr, err)
 }
 
 func segments(del byte) bufio.SplitFunc {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if atEOF {
+			return 0, nil, nil
+		}
 		index := bytes.IndexByte(data, del)
 		if index < 0 && !atEOF {
 			if len(bytes.TrimSpace(data)) == 0 {
-				return len(data), nil, nil
+				return 0, nil, nil
 			}
 			return 0, nil, ErrMissingSegmentTerminator
 		}

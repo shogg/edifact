@@ -2,6 +2,8 @@ package build
 
 import (
 	"strings"
+
+	"github.com/shogg/edifact/spec"
 )
 
 // SegmentSelector data structure representing struct tag `edifact:""`.
@@ -69,14 +71,14 @@ func parseParamsAndValue(s string) ([]SegmentSelectorParam, ValueComponent) {
 			}
 			if c == "?" {
 				value = ValueComponent{
-					Elem: i,
+					Elem: i + 1,
 					Comp: j,
 				}
 				continue
 			}
 
 			params = append(params, SegmentSelectorParam{
-				Elem:  i,
+				Elem:  i + 1,
 				Comp:  j,
 				Value: c,
 			})
@@ -84,4 +86,41 @@ func parseParamsAndValue(s string) ([]SegmentSelectorParam, ValueComponent) {
 	}
 
 	return params, value
+}
+
+// Select returns a seqment component value.
+func (sel SegmentSelector) Select(seg spec.Segment) string {
+	if sel.Value.Elem == 0 {
+		return string(seg)
+	}
+	return seg.Elem(sel.Value.Elem).Comp(sel.Value.Comp)
+}
+
+// Matches returns true if segment group path, segment tag and segment selector parameters matches.
+func (sel SegmentSelector) Matches(node *spec.Node, seg spec.Segment) bool {
+
+	if sel.Tag != seg.Tag() {
+		return false
+	}
+	if sel.Path != node.Path() {
+		return false
+	}
+
+	matches := true
+	for _, param := range sel.Params {
+		matches = matches && param.matches(seg)
+	}
+	return matches
+}
+
+// matches returns true if a segment component value matches the param.
+func (param SegmentSelectorParam) matches(seg spec.Segment) bool {
+	comp := seg.Elem(param.Elem).Comp(param.Comp)
+	candidates := strings.Split(param.Value, "|")
+	for _, c := range candidates {
+		if comp == c {
+			return true
+		}
+	}
+	return false
 }

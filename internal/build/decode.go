@@ -4,37 +4,31 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-
-	"github.com/shogg/edifact/spec"
+	"strings"
+	"time"
 )
 
-func unmarshal(v interface{}, seg spec.Segment, comp ValueComponent) error {
-	return unmarshalStruct(reflect.ValueOf(v), seg, comp)
-}
+var typeTime = reflect.TypeOf(time.Time{})
 
-func unmarshalStruct(p reflect.Value, seg spec.Segment, comp ValueComponent) error {
+func decode(s string, v reflect.Value) error {
 
-	if p.Kind() != reflect.Ptr || p.IsNil() {
-		return fmt.Errorf("%w: %s", ErrNotPointer, p.Type())
+	// edifact.Unmarshaller
+	unmarshal := v.MethodByName("UnmarshalEdifact")
+	if unmarshal.IsValid() {
+		in := []reflect.Value{reflect.ValueOf([]byte(s))}
+		out := unmarshal.Call(in)
+		if out[0].IsNil() {
+			return nil
+		}
+		return out[0].Interface().(error)
 	}
 
-	s := p.Elem()
-	if s.Kind() != reflect.Struct {
-		return fmt.Errorf("%w: %s", ErrNotStruct, s.Type())
+	// time.Time
+	if v.Type().AssignableTo(typeTime) {
+		return decodeTime(s, v)
 	}
 
-	for i := 0; i < s.NumField(); i++ {
-		f := s.Field(i)
-		unmarshalLiteral(f, seg, comp)
-	}
-
-	return nil
-}
-
-func unmarshalLiteral(v reflect.Value, seg spec.Segment, comp ValueComponent) error {
-
-	s := seg.Elem(comp.Elem).Comp(comp.Comp)
-
+	// simple data types
 	switch v.Kind() {
 	case reflect.String:
 		v.SetString(s)
@@ -76,5 +70,21 @@ func unmarshalLiteral(v reflect.Value, seg spec.Segment, comp ValueComponent) er
 		return fmt.Errorf("%s: %s", ErrNotImplemented, v.Type())
 	}
 
+	return nil
+}
+
+func decodeTime(s string, v reflect.Value) error {
+
+	if s[:3] == "DTM" {
+		comp := strings.SplitN(s, ":", 3)
+		s = comp[1]
+	}
+
+	t, err := time.Parse("20060102", s)
+	if err != nil {
+		return err
+	}
+
+	v.Set(reflect.ValueOf(t))
 	return nil
 }

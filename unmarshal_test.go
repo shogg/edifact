@@ -15,12 +15,13 @@ UNH+1+ORDERS:D:96A:UN'
 BGM+220+B10001'
 DTM+4:20060620:102'
 NAD+BY+++Bestellername+Strasse+Stadt++23436+xx'
-LIN+1++Produkt Schrauben:SA'
+CPS+'
+LIN+1++product bolts:SA'
 QTY+1:1000'
-UNS+S'
+LIN+2++product nuts:SA'
+QTY+1:1000'
 CNT+2:1'
 UNT+9+1'
-UNZ+1+1234567'
 `
 
 func TestUnmarshal(t *testing.T) {
@@ -30,10 +31,10 @@ func TestUnmarshal(t *testing.T) {
 		AuftragNr  string    `edifact:"SG1/RFF+100"`
 		BestellNr  string    `edifact:"SG1/RFF+300|301"`
 		Positionen []struct {
-			PositionNr  int `edifact:"SG10/SG17/LIN+?"`
-			Bezeichnung int `edifact:"SG10/SG17/LIN+++?:"`
-			Anzahl      int `edifact:"SG10/QTY+?:"`
-		}
+			PositionNr  int    `edifact:"SG10/SG17/LIN+?"`
+			Bezeichnung string `edifact:"SG10/SG17/LIN+++?:"`
+			Anzahl      int    `edifact:"SG10/SG17/QTY+?:"`
+		} `edifact:"SG10/SG17"`
 	}
 
 	document := strings.NewReader(ediMessage)
@@ -44,5 +45,17 @@ func TestUnmarshal(t *testing.T) {
 
 	if len(ediData) == 0 {
 		t.Error("data expected")
+	}
+	if ediData[0].Positionen[0].PositionNr != 1 {
+		t.Error("LIN+1 expected")
+	}
+	if ediData[0].Positionen[0].Bezeichnung != "product bolts" {
+		t.Error("product bolts expected")
+	}
+	if ediData[0].Positionen[1].PositionNr != 2 {
+		t.Error("LIN+1 expected")
+	}
+	if ediData[0].Positionen[1].Bezeichnung != "product nuts" {
+		t.Error("product bolts expected")
 	}
 }

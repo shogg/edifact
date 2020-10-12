@@ -24,13 +24,11 @@ LIN+1++Produkt Schrauben:SA'
 QTY+1:1000'
 CNT+2:1'
 UNT+9+1'
-UNZ+1+1234567'
 `
 
 func TestParser(t *testing.T) {
-	p := parse.New(strings.NewReader(ediMessage1))
 	h := testHandler{}
-	if err := p.Parse(&h); err != nil {
+	if err := parse.Parse(strings.NewReader(ediMessage1), &h); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -5,15 +5,26 @@ import (
 )
 
 type Handler struct {
-	Target interface{}
+	Target     interface{}
+	decodeTree DecodeTree
 }
 
-func NewHandler(target interface{}) *Handler {
-	h := &Handler{Target: target}
+func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment) error {
 
-	return h
-}
+	if h.decodeTree == nil {
+		var err error
+		h.decodeTree, err = newDecodeTree(specNode, h.Target)
+		if err != nil {
+			return err
+		}
+	}
 
-func (h *Handler) Handle(n *spec.Node, s spec.Segment) error {
+	decodeNodes := h.decodeTree[specNode]
+	for _, n := range decodeNodes {
+		if err := n.Decode(seg); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

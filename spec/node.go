@@ -1,6 +1,9 @@
 package spec
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Node part of message format spec
 type Node struct {
@@ -12,6 +15,8 @@ type Node struct {
 	FirstChild   *Node
 	Sibling      *Node
 	SegmentGroup *Node
+
+	path *string
 }
 
 // NodeType node type
@@ -79,6 +84,33 @@ func newNode(nodeType NodeType, tag string, p Required, max int, children []*Nod
 	return n
 }
 
+func (node *Node) FindNode(path, tag string) *Node {
+	var s *Node
+	node.iterate(true, func(n *Node) bool {
+		if n.Type == NodeSegment && n.Tag == tag && n.Path() == path {
+			s = n
+			return false
+		}
+		return true
+	})
+	return s
+}
+
+func (node *Node) Path() string {
+	if node.path != nil {
+		return *node.path
+	}
+
+	var buf strings.Builder
+	for _, sg := range node.SegmentGroups() {
+		buf.WriteString(sg.Tag)
+		buf.WriteByte('/')
+	}
+	node.path = new(string)
+	*node.path = buf.String()
+	return *node.path
+}
+
 // SegmentGroups all segment groups.
 func (node *Node) SegmentGroups() []*Node {
 
@@ -113,7 +145,7 @@ func (node *Node) Transition(tag string) (*Node, error) {
 	}
 
 	var s *Node
-	node.iterate(func(n *Node) bool {
+	node.iterate(false, func(n *Node) bool {
 		if n.Type == NodeSegment && n.Tag == tag {
 			s = n
 			return false
@@ -134,7 +166,7 @@ func (node *Node) Transition(tag string) (*Node, error) {
 //     v   \(3)
 // 	   o--->o
 //     (2)
-func (node *Node) iterate(f func(*Node) bool) {
+func (node *Node) iterate(all bool, f func(*Node) bool) {
 
 	n := node
 	for n != nil {
@@ -144,18 +176,18 @@ func (node *Node) iterate(f func(*Node) bool) {
 		} else if n.Sibling != nil {
 			n = n.Sibling
 		} else {
-			n = n.parentSibling(true)
+			n = n.parentSibling(true, all)
 			if n == nil {
 				return
 			}
 		}
 
-		if !f(n) {
+		if n != nil && !f(n) {
 			return
 		}
 
-		if n.Required == M {
-			n = n.parentSibling(false)
+		if n.Required == M && !all {
+			n = n.parentSibling(false, false)
 			if n != nil && !f(n) {
 				return
 			}
@@ -163,15 +195,18 @@ func (node *Node) iterate(f func(*Node) bool) {
 	}
 }
 
-func (node *Node) parentSibling(loop bool) *Node {
+func (node *Node) parentSibling(loop, loopOverride bool) *Node {
 	n := node
 	for n.Parent != nil {
 		n = n.Parent
-		if loop && n.Type == NodeSegmentGroup {
+		if loop && !loopOverride && n.Type == NodeSegmentGroup {
 			return n
 		}
 		if n.Sibling != nil {
 			return n.Sibling
+		}
+		if !loopOverride {
+			loop = true
 		}
 	}
 	return nil
