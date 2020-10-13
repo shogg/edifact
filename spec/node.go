@@ -84,18 +84,7 @@ func newNode(nodeType NodeType, tag string, p Required, max int, children []*Nod
 	return n
 }
 
-func (node *Node) FindNode(path, tag string) *Node {
-	var s *Node
-	node.iterate(true, func(n *Node) bool {
-		if n.Type == NodeSegment && n.Tag == tag && n.Path() == path {
-			s = n
-			return false
-		}
-		return true
-	})
-	return s
-}
-
+// Path segment group path as string.
 func (node *Node) Path() string {
 	if node.path != nil {
 		return *node.path
@@ -111,7 +100,7 @@ func (node *Node) Path() string {
 	return *node.path
 }
 
-// SegmentGroups all segment groups.
+// SegmentGroups segment group path.
 func (node *Node) SegmentGroups() []*Node {
 
 	if node == nil {
@@ -137,77 +126,84 @@ func (node *Node) SegmentGroups() []*Node {
 	return result
 }
 
-// Transition switch to next node with matching segment tag.
-func (node *Node) Transition(tag string) (*Node, error) {
+// FindNode find a node with matching segment group path and segment tag.
+func (node *Node) FindNode(path, tag string) *Node {
 
-	if node.Tag == tag {
-		return node, nil
+	if node.Tag == tag && node.Path() == path {
+		return node
 	}
 
 	var s *Node
-	node.iterate(false, func(n *Node) bool {
-		if n.Type == NodeSegment && n.Tag == tag {
+	node.iterate(false, true, func(n *Node, l bool) bool {
+		if n.Tag == tag && n.Path() == path {
 			s = n
-			return false
+			return true
 		}
-		return true
+		return false
+	})
+	return s
+}
+
+// Transition switch to next node with matching segment tag.
+func (node *Node) Transition(tag string) (*Node, bool, error) {
+
+	if node.Tag == tag {
+		return node, false, nil
+	}
+
+	var s *Node
+	var loop bool
+	node.iterate(true, false, func(n *Node, l bool) bool {
+		if n.Tag == tag {
+			s = n
+			loop = l
+			return true
+		}
+		return false
 	})
 
 	if s == nil {
-		return nil, fmt.Errorf("%w: %s", ErrUnexpectedSegment, tag)
+		return nil, false, fmt.Errorf("%w: %s", ErrUnexpectedSegment, tag)
 	}
-	return s, nil
+	return s, loop, nil
 }
 
 // Iteration order: (1) child, (2) sibling, (3) parent sibling.
-// If parent is a group repeat the group.
 // --->o -->o
 //  (1)|  \
 //     v   \(3)
-// 	   o--->o
+//     o--->o
 //     (2)
-func (node *Node) iterate(all bool, f func(*Node) bool) {
+func (node *Node) iterate(loop, ignoreM bool, f func(*Node, bool) bool) {
+
+	var leave, forceLeave bool
 
 	n := node
 	for n != nil {
 
-		if n.FirstChild != nil {
+		l := false
+		if n.FirstChild != nil && !forceLeave && (!leave || loop) {
 			n = n.FirstChild
+			leave = false
+			l = true
 		} else if n.Sibling != nil {
 			n = n.Sibling
+			leave = false
+		} else if n.Parent != nil {
+			n = n.Parent
+			leave = true
 		} else {
-			n = n.parentSibling(true, all)
-			if n == nil {
-				return
-			}
-		}
-
-		if n != nil && !f(n) {
 			return
 		}
 
-		if n.Required == M && !all {
-			n = n.parentSibling(false, false)
-			if n != nil && !f(n) {
-				return
-			}
+		if f(n, l) {
+			return
 		}
-	}
-}
 
-func (node *Node) parentSibling(loop, loopOverride bool) *Node {
-	n := node
-	for n.Parent != nil {
-		n = n.Parent
-		if loop && !loopOverride && n.Type == NodeSegmentGroup {
-			return n
-		}
-		if n.Sibling != nil {
-			return n.Sibling
-		}
-		if !loopOverride {
-			loop = true
+		forceLeave = false
+		if n.Required == M && !ignoreM {
+			forceLeave = true
+			n = n.Parent
 		}
 	}
-	return nil
 }

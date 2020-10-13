@@ -8,30 +8,17 @@ import (
 
 func TestTransition(t *testing.T) {
 
-	unh, err := spec.DESADV.Transition("UNH")
-	if err != nil {
-		t.Fatal(err)
-	}
-	bgm, err := unh.Transition("BGM")
-	if err != nil {
-		t.Fatal(err)
-	}
-	rff, err := bgm.Transition("RFF")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if rff == nil || rff.Tag != "RFF" {
-		t.Error("RFF expected")
-	}
-	nad, err := rff.Transition("NAD")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if nad == nil || nad.Tag != "NAD" {
-		t.Error("NAD expected")
-	}
-	_, err = nad.Transition("DTM")
-	if err == nil {
-		t.Error("error expected")
+	expected := []string{"UNH", "BGM", "RFF", "RFF", "NAD"}
+
+	var err error
+	node := spec.Get("DESADV")
+	for i, exp := range expected {
+		node, _, err = node.Transition(exp)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if exp != node.Tag {
+			t.Errorf("%d: %s expected, was %s", i, exp, node.Tag)
+		}
 	}
 }

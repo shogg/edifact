@@ -1,7 +1,7 @@
 package spec
 
-// DESADV message specification.
-var DESADV = Msg("DESADV",
+// desadv message specification.
+var desadv = Msg("DESADV",
 	S("UNA", C, 1),
 	S("UNB", C, 1),
 	S("UNH", M, 1),
@@ -103,3 +103,7 @@ var DESADV = Msg("DESADV",
 	S("CNT", C, 5),
 	S("UNT", M, 1),
 )
+
+func init() {
+	Add("DESADV", desadv)
+}

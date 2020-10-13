@@ -10,8 +10,8 @@ import (
 	"github.com/shogg/edifact/spec"
 )
 
-// Parser parses edifact messages.
-type Parser struct {
+// parser parses edifact messages.
+type parser struct {
 	scanner   *bufio.Scanner
 	node      *spec.Node
 	lineNr    int
@@ -23,7 +23,7 @@ func Parse(r io.Reader, h Handler) error {
 
 	s := bufio.NewScanner(r)
 	s.Split(segments('\''))
-	p := &Parser{scanner: s}
+	p := &parser{scanner: s}
 
 	for p.scanner.Scan() {
 		token := p.scanner.Text()
@@ -43,13 +43,13 @@ func Parse(r io.Reader, h Handler) error {
 		}
 
 		if p.node != nil {
-			next, err := p.node.Transition(seg.Tag())
+			next, loop, err := p.node.Transition(seg.Tag())
 			if err != nil {
 				return p.annotate(err)
 			}
 			p.node = next
 
-			if err := h.Handle(p.node, seg); err != nil {
+			if err := h.Handle(p.node, seg, loop); err != nil {
 				return p.annotate(err)
 			}
 		}
@@ -58,7 +58,7 @@ func Parse(r io.Reader, h Handler) error {
 	return p.annotate(p.scanner.Err())
 }
 
-func (p *Parser) annotate(err error) error {
+func (p *parser) annotate(err error) error {
 	if err == nil {
 		return nil
 	}

@@ -3,7 +3,7 @@ package edifact
 import (
 	"io"
 
-	"github.com/shogg/edifact/internal/build"
+	"github.com/shogg/edifact/build"
 	"github.com/shogg/edifact/parse"
 )
 
@@ -14,6 +14,6 @@ type Unmarshaller interface {
 
 // Unmarshal edifact document into target data structure.
 func Unmarshal(r io.Reader, target interface{}) error {
-	h := &build.Handler{Target: target}
+	h := build.NewHandler(target)
 	return parse.Parse(r, h)
 }
