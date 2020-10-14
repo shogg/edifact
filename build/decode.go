@@ -13,8 +13,15 @@ var typeTime = reflect.TypeOf(time.Time{})
 func decode(s string, v reflect.Value) error {
 
 	// edifact.Unmarshaller
-	unmarshal := v.MethodByName("UnmarshalEdifact")
+	p := v
+	if p.Kind() != reflect.Ptr {
+		p = v.Addr()
+	}
+	unmarshal := p.MethodByName("UnmarshalEdifact")
 	if unmarshal.IsValid() {
+		if p.IsNil() {
+			p.Set(reflect.New(p.Type().Elem()))
+		}
 		in := []reflect.Value{reflect.ValueOf([]byte(s))}
 		out := unmarshal.Call(in)
 		if out[0].IsNil() {
