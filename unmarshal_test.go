@@ -14,50 +14,49 @@ UNB+UNOC:3+sender+receiver+060620:0931+1++1234567'
 
 UNH+1+DESADV:D:96A:UN'
 BGM+220+B10001'
-DTM+4:20060620:102'
-RFF+100+1'
-RFF+301+2'
+DTM+17:20060620:102'
+RFF+ON+1'
+RFF+DQ+2'
 NAD+BY+++name+street+city++23436+xx'
 CPS+'
 LIN+1++product A:SA'
-QTY+2:1000'
+QTY+12:10'
 LIN+2++product B:SA'
-QTY+3:1000'
+QTY+12:20'
 CNT+2:1'
 UNT+9+1'
 
 UNH+1+DESADV:D:96A:UN'
 BGM+220+B10001'
-DTM+4:20060620:102'
-RFF+100+1'
-RFF+301+2'
+DTM+17:20060620:102'
+RFF+ON+1'
+RFF+DQ+2'
 NAD+BY+++name+street+city++23436+xx'
 CPS+'
 LIN+1++product A:SA'
-QTY+2:1000'
+QTY+12:10'
 LIN+2++product B:SA'
-QTY+3:1000'
+QTY+12:20'
 CNT+2:1'
 UNT+9+1'
 `
 
+type Message struct {
+	Date       time.Time `edifact:"DTM+17|18"`
+	DeliveryNr string    `edifact:"SG1/RFF+VN|DQ+?"`
+	OrderNr    int       `edifact:"SG1/RFF+ON+?"`
+	Items      []Item    `edifact:"SG10/SG17"`
+}
+type Item struct {
+	ItemNr      int    `edifact:"SG10/SG17/LIN+?"`
+	Description string `edifact:"SG10/SG17/LIN+++?"`
+	Quantity    int    `edifact:"SG10/SG17/QTY+12:?"`
+}
+
 func TestUnmarshal(t *testing.T) {
 
-	type Item struct {
-		ItemNr      int    `edifact:"SG10/SG17/LIN+?"`
-		Description string `edifact:"SG10/SG17/LIN+++?"`
-		Quantity    int    `edifact:"SG10/SG17/QTY+?"`
-	}
-	type Message struct {
-		Date       time.Time `edifact:"DTM+4|5"`
-		DeliveryNr string    `edifact:"SG1/RFF+100+?"`
-		OrderNr    int       `edifact:"SG1/RFF+300|301+?"`
-		Items      []Item    `edifact:"SG10/SG17"`
-	}
-
-	document := strings.NewReader(ediMessage)
-	var ediData []*Message
-	if err := edifact.Unmarshal(document, &ediData); err != nil {
+	ediData, err := unmarshal()
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -76,4 +75,21 @@ func TestUnmarshal(t *testing.T) {
 	if ediData[0].Items[1].Description != "product B" {
 		t.Error("product B expected")
 	}
+}
+
+func BenchmarkUnmarshal(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		_, _ = unmarshal()
+	}
+}
+
+func unmarshal() ([]*Message, error) {
+
+	document := strings.NewReader(ediMessage)
+	var ediData []*Message
+	if err := edifact.Unmarshal(document, &ediData); err != nil {
+		return nil, err
+	}
+
+	return ediData, nil
 }
