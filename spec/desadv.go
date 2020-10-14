@@ -102,6 +102,7 @@ var desadv = Msg("DESADV",
 	),
 	S("CNT", C, 5),
 	S("UNT", M, 1),
+	S("UNZ", C, 1),
 )
 
 func init() {

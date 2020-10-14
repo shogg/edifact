@@ -23,7 +23,7 @@ func Parse(r io.Reader, h Handler) error {
 
 	s := bufio.NewScanner(r)
 	s.Split(segments('\''))
-	p := &parser{scanner: s}
+	p := &parser{scanner: s, lineNr: 1}
 
 	for p.scanner.Scan() {
 		token := p.scanner.Text()
@@ -72,10 +72,7 @@ func segments(del byte) bufio.SplitFunc {
 		}
 		index := bytes.IndexByte(data, del)
 		if index < 0 && !atEOF {
-			if len(bytes.TrimSpace(data)) == 0 {
-				return 0, nil, nil
-			}
-			return 0, nil, ErrMissingSegmentTerminator
+			return 0, nil, nil
 		}
 		return index + 1, data[:index+1], nil
 	}

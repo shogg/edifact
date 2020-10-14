@@ -6,7 +6,7 @@ import (
 	"github.com/shogg/edifact/spec"
 )
 
-// segmentSelector data structure representing struct tag `edifact:""`.
+// segmentSelector represents struct tag `edifact:""`.
 type segmentSelector struct {
 	path   string
 	tag    string
@@ -14,14 +14,14 @@ type segmentSelector struct {
 	value  valueComponent
 }
 
-// segmentSelectorParam selection parameters.
+// segmentSelectorParam segment filter parameter.
 type segmentSelectorParam struct {
 	elem  int
 	comp  int
 	value string
 }
 
-// valueComponent segment component holding the value.
+// valueComponent value position in the segment.
 type valueComponent struct {
 	elem int
 	comp int
