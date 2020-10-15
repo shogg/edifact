@@ -7,7 +7,7 @@ import (
 	"github.com/shogg/edifact/parse"
 )
 
-// Unmarshaller interface for custom data types.
+// Unmarshaller interface for custom data type parsing.
 type Unmarshaller interface {
 	UnmarshalEdifact(data []byte) error
 }
