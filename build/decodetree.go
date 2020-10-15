@@ -96,6 +96,10 @@ func addDecodeNode(
 			}
 			sel := parseSegmentSelector(f.Tag.Get("edifact"))
 			sn := specNode.FindNode(sel.path, sel.tag)
+			if sn == nil {
+				continue
+			}
+
 			n := &decodeNode{
 				parent:      node,
 				segSelector: sel,

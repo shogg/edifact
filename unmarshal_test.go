@@ -48,6 +48,7 @@ type Message struct {
 	Items      []Item    `edifact:"SG10/SG17"`
 }
 type Item struct {
+	Message     *Message
 	ItemNr      int    `edifact:"SG10/SG17/LIN+?"`
 	Description string `edifact:"SG10/SG17/LIN+++?"`
 	Quantity    int    `edifact:"SG10/SG17/QTY+12:?"`
