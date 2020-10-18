@@ -118,7 +118,6 @@ func main() {
 * UNA, UNB don't get evaluated
 * release (escape) character `?` is not fully implemented
 * `time.Time` can parse only one format (ignores the format type)
-* ErrMissingSegmentTerminator the only parser error isn't used anymore
-* only DESADV is included
+* only DESADV is included atm
 
 Contributions are welcome.
