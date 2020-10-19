@@ -74,7 +74,7 @@ func decode(s string, v reflect.Value) error {
 		}
 		v.SetComplex(n)
 	default:
-		return fmt.Errorf("%s: %s", ErrNotImplemented, v.Type())
+		return fmt.Errorf("%w: %s", ErrNotImplemented, v.Type())
 	}
 
 	return nil
