@@ -39,7 +39,7 @@ func Parse(r io.Reader, h Handler) error {
 		seg := spec.Segment(token)
 
 		if seg.Tag() == "UNH" {
-			p.node = spec.Get(seg.Elem(2).Comp(0))
+			p.node = spec.Get(seg.Comp(2).Elem(0))
 		}
 
 		if p.node != nil {

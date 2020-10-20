@@ -16,15 +16,15 @@ type segmentSelector struct {
 
 // segmentSelectorParam segment filter parameter.
 type segmentSelectorParam struct {
-	elem  int
 	comp  int
+	elem  int
 	value string
 }
 
 // valueComponent value position in the segment.
 type valueComponent struct {
-	elem int
 	comp int
+	elem int
 }
 
 // parseSegmentSelector parses a struct tag.
@@ -69,15 +69,15 @@ func parseParamsAndValue(s string) ([]segmentSelectorParam, valueComponent) {
 			}
 			if c == "?" {
 				value = valueComponent{
-					elem: i + 1,
-					comp: j,
+					comp: i + 1,
+					elem: j,
 				}
 				continue
 			}
 
 			params = append(params, segmentSelectorParam{
-				elem:  i + 1,
-				comp:  j,
+				comp:  i + 1,
+				elem:  j,
 				value: c,
 			})
 		}
@@ -86,12 +86,12 @@ func parseParamsAndValue(s string) ([]segmentSelectorParam, valueComponent) {
 	return params, value
 }
 
-// selectValue returns a seqment component value.
+// selectValue returns a seqment element value.
 func (sel segmentSelector) selectValue(seg spec.Segment) string {
-	if sel.value.elem == 0 {
+	if sel.value.comp == 0 {
 		return string(seg)
 	}
-	return seg.Elem(sel.value.elem).Comp(sel.value.comp)
+	return seg.Comp(sel.value.comp).Elem(sel.value.elem)
 }
 
 // matches returns true if segment group path, segment tag and segment selector parameters matches.
@@ -111,9 +111,9 @@ func (sel segmentSelector) matches(node *spec.Node, seg spec.Segment) bool {
 	return matches
 }
 
-// matches returns true if a segment component value matches the param.
+// matches returns true if a segment element value matches the param.
 func (param segmentSelectorParam) matches(seg spec.Segment) bool {
-	comp := seg.Elem(param.elem).Comp(param.comp)
+	comp := seg.Comp(param.comp).Elem(param.elem)
 	candidates := strings.Split(param.value, "|")
 	for _, c := range candidates {
 		if comp == c {

@@ -6,11 +6,11 @@ import (
 )
 
 type (
-	// Segment is a sequence of elements joined by + ending in '
+	// Segment is a sequence of composites joined by + ending in '
 	Segment string
-	// Element is a sequence of components joined by :
-	Element string
-	// Component string
+	// Composite is a sequence of elements joined by :
+	Composite string
+	// Element string
 )
 
 // Tag retrieves the segment tag.
@@ -22,15 +22,15 @@ func (s Segment) Tag() string {
 	return string(s)[:i]
 }
 
-// Elem retrieves the ith element.
-func (s Segment) Elem(i int) Element {
+// Comp retrieves the ith composite.
+func (s Segment) Comp(i int) Composite {
 	scanner := bufio.NewScanner(strings.NewReader(string(s)))
 	scanner.Split(delimiter('+'))
 
 	j := 0
 	for scanner.Scan() {
 		if j == i {
-			return Element(scanner.Text())
+			return Composite(scanner.Text())
 		}
 		j++
 	}
@@ -38,8 +38,8 @@ func (s Segment) Elem(i int) Element {
 	return ""
 }
 
-// Comp retrieves the ith component.
-func (e Element) Comp(i int) string {
+// Elem retrieves the ith element.
+func (e Composite) Elem(i int) string {
 	scanner := bufio.NewScanner(strings.NewReader(string(e)))
 	scanner.Split(delimiter(':'))
 

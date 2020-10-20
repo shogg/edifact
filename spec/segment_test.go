@@ -11,7 +11,7 @@ func TestSegment(t *testing.T) {
 	seg := spec.Segment("UNH+1+?+ORDERS:D:96A:UN'")
 
 	tests := []struct {
-		e, c     int
+		c, e     int
 		expected string
 	}{
 		{0, 0, "UNH"},
@@ -25,7 +25,7 @@ func TestSegment(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		actual := seg.Elem(test.e).Comp(test.c)
+		actual := seg.Comp(test.c).Elem(test.e)
 		if actual != test.expected {
 			t.Errorf(`"%s" expected, was "%s"`, test.expected, actual)
 		}
@@ -36,7 +36,7 @@ func BenchmarkSegment(b *testing.B) {
 
 	seg := spec.Segment("UNH+1+?+ORDERS:D:96A:UN'")
 	for i := 0; i < b.N; i++ {
-		_ = seg.Elem(2).Comp(3)
+		_ = seg.Comp(2).Elem(3)
 	}
 }
 
