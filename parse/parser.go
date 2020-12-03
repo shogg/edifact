@@ -39,7 +39,13 @@ func Parse(r io.Reader, h Handler) error {
 		seg := spec.Segment(token)
 
 		if seg.Tag() == "UNH" {
-			p.node = spec.Get(seg.Comp(2).Elem(0))
+			msgType := seg.Comp(2).Elem(0)
+			p.node = spec.Get(msgType)
+			if p.node == nil {
+				return p.annotate(fmt.Errorf(
+					"unknown edifact message type: %s",
+					msgType))
+			}
 		}
 
 		if p.node != nil {
