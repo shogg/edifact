@@ -80,14 +80,30 @@ func decode(s string, v reflect.Value) error {
 	return nil
 }
 
+const (
+	dtmFormat102 = 102
+	dtmFormat201 = 201
+)
+
 func decodeTime(s string, v reflect.Value) error {
 
+	dtmFormat := dtmFormat102
 	if s[:3] == "DTM" {
+		s = strings.Trim(s, "'")
 		comp := strings.SplitN(s, ":", 3)
 		s = comp[1]
+		dtmFormat, _ = strconv.Atoi(comp[2])
 	}
 
-	t, err := time.Parse("20060102", s)
+	format := "20060102"
+	switch dtmFormat {
+	case dtmFormat102:
+		format = "20060102"
+	case dtmFormat201:
+		format = "200601021504"
+	}
+
+	t, err := time.Parse(format, s)
 	if err != nil {
 		return err
 	}
