@@ -16,17 +16,17 @@ https://service.unece.org/trade/untdid/d96a/trmd/desadv_s.htm
 import "github.com/shogg/edifact/spec"
 
 var desadv = spec.Msg("DESADV",
-	spec.S("UNA", C, 1),
-	spec.S("UNB", C, 1),
-	spec.S("UNH", M, 1),
-	spec.S("BGM", M, 1),
-	spec.S("DTM", C, 10),
-	spec.S("ALI", C, 5),
-	spec.S("MEA", C, 5),
-	spec.S("MOA", C, 5),
-	spec.SG("SG1", C, 10,
-		spec.S("RFF", M, 1),
-		spec.S("DTM", C, 1),
+	spec.S("UNA", spec.C, 1),
+	spec.S("UNB", spec.C, 1),
+	spec.S("UNH", spec.M, 1),
+	spec.S("BGM", spec.M, 1),
+	spec.S("DTM", spec.C, 10),
+	spec.S("ALI", spec.C, 5),
+	spec.S("MEA", spec.C, 5),
+	spec.S("MOA", spec.C, 5),
+	spec.SG("SG1", spec.C, 10,
+		spec.S("RFF", spec.M, 1),
+		spec.S("DTM", spec.C, 1),
 	),
 [..]
 ```
@@ -77,7 +77,6 @@ import (
 var ediMessage = `
 UNA:+.? '
 UNB+UNOC:3+sender+receiver+060620:0931+1++1234567'
-
 UNH+1+DESADV:D:96A:UN'
 BGM+220+B10001'
 DTM+17:20060620:102'
@@ -117,7 +116,8 @@ func main() {
 * meta characters are fixed to `UNA:+.? '`
 * UNA, UNB don't get evaluated
 * release (escape) character `?` is not fully implemented
-* `time.Time` can parse only one format (ignores the format type)
-* only DESADV is included atm
+* `time.Time` can only parse DTM formats 102, 201
+* only ORDERS and DESADV are included atm
+* multiple message format versions are not supported atm
 
 Contributions are welcome.
