@@ -83,6 +83,7 @@ func decode(s string, v reflect.Value) error {
 const (
 	dtmFormat102 = 102
 	dtmFormat201 = 201
+	dtmFormat203 = 203
 )
 
 func decodeTime(s string, v reflect.Value) error {
@@ -99,7 +100,7 @@ func decodeTime(s string, v reflect.Value) error {
 	switch dtmFormat {
 	case dtmFormat102:
 		format = "20060102"
-	case dtmFormat201:
+	case dtmFormat201, dtmFormat203:
 		format = "200601021504"
 	}
 
