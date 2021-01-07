@@ -10,58 +10,10 @@ import (
 	"github.com/shogg/edifact/spec"
 )
 
-// parser parses edifact messages.
+// parser annotates parse errors with line and segment number.
 type parser struct {
-	scanner   *bufio.Scanner
-	node      *spec.Node
 	lineNr    int
 	segmentNr int
-}
-
-// Parse parses an edifact document.
-func Parse(r io.Reader, h Handler) error {
-
-	s := bufio.NewScanner(r)
-	s.Split(segments('\''))
-	p := &parser{scanner: s, lineNr: 1}
-
-	for p.scanner.Scan() {
-		token := p.scanner.Text()
-
-		p.segmentNr++
-		p.lineNr += strings.Count(token, "\n")
-
-		token = strings.TrimSpace(token)
-		if token == "" {
-			continue
-		}
-
-		seg := spec.Segment(token)
-
-		if seg.Tag() == "UNH" {
-			msgType := seg.Comp(2).Elem(0)
-			p.node = spec.Get(msgType)
-			if p.node == nil {
-				return p.annotate(fmt.Errorf(
-					"unknown edifact message type: %s",
-					msgType))
-			}
-		}
-
-		if p.node != nil {
-			next, loop, err := p.node.Transition(seg.Tag())
-			if err != nil {
-				return p.annotate(err)
-			}
-			p.node = next
-
-			if err := h.Handle(p.node, seg, loop); err != nil {
-				return p.annotate(err)
-			}
-		}
-	}
-
-	return p.annotate(p.scanner.Err())
 }
 
 func (p *parser) annotate(err error) error {
@@ -71,15 +23,87 @@ func (p *parser) annotate(err error) error {
 	return fmt.Errorf("line %d, segment %d: %w", p.lineNr, p.segmentNr, err)
 }
 
-func segments(del byte) bufio.SplitFunc {
+// Parse parses an edifact document.
+func Parse(r io.Reader, h Handler) error {
+
+	s := bufio.NewScanner(r)
+	s.Split(segments('\'', '?'))
+	p := &parser{lineNr: 1}
+
+	var node *spec.Node
+
+	for s.Scan() {
+		token := s.Text()
+
+		p.lineNr += strings.Count(token, "\n")
+		p.segmentNr++
+
+		token = strings.TrimSpace(token)
+		if len(token) == 0 {
+			break
+		}
+		if token[len(token)-1] != '\'' {
+			return p.annotate(ErrMissingSegmentTerminator)
+		}
+
+		seg := spec.Segment(token)
+
+		if seg.Tag() == "UNH" {
+			msgType := seg.Comp(2).Elem(0)
+			node = spec.Get(msgType)
+			if node == nil {
+				return p.annotate(fmt.Errorf(
+					"unknown edifact message type: %s",
+					msgType))
+			}
+		}
+
+		if node != nil {
+			next, loop, err := node.Transition(seg.Tag())
+			if err != nil {
+				return p.annotate(err)
+			}
+			node = next
+
+			if err := h.Handle(node, seg, loop); err != nil {
+				return p.annotate(err)
+			}
+		}
+	}
+
+	return p.annotate(s.Err())
+}
+
+func segments(delimiter, release byte) bufio.SplitFunc {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		if atEOF {
-			return 0, nil, nil
+		d := data
+		index := 0
+		for {
+			i := bytes.IndexByte(d, delimiter)
+			if i < 0 {
+				if atEOF {
+					return len(data), data, nil
+				}
+				return 0, nil, nil
+			}
+			index += i
+			if !isReleased(d, i, release) {
+				break
+			}
+			index++
+			d = d[i+1:]
 		}
-		index := bytes.IndexByte(data, del)
-		if index < 0 && !atEOF {
-			return 0, nil, nil
-		}
+
 		return index + 1, data[:index+1], nil
 	}
+}
+
+func isReleased(data []byte, index int, release byte) bool {
+
+	released := false
+	for i := index - 1; i >= 0 && data[i] == release; i-- {
+		released = !released
+	}
+
+	return released
 }

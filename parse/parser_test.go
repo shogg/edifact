@@ -19,12 +19,51 @@ RFF+1+1++'
 DTM+4:20060620:102'
 RFF+2+2++'
 NAD+BY+++Bestellername+Strasse+Stadt++23436+xx'
-CPS+++'
 LIN+1++Produkt Schrauben:SA'
 QTY+1:1000'
 CNT+2:1'
 UNT+9+1'
 `
+
+func TestMissingSegmentTerminator(t *testing.T) {
+
+	tests := []string{
+		"DTA",
+		"DTA'DTA",
+		"DTA'\nDTA",
+		"DTA'\n\nDTA",
+	}
+
+	h := testHandler{}
+	for _, test := range tests {
+		err := parse.Parse(strings.NewReader(test), &h)
+		if err == nil {
+			t.Error("missing segment terminator expected")
+		} else {
+			fmt.Println(err)
+		}
+	}
+}
+
+func TestReleaseChar(t *testing.T) {
+
+	tests := []string{
+		"DTA'\n",
+		"DTA\n'",
+		"DTA?''",
+		"DTA??'",
+		"DTA???''",
+		"DTA?'?''",
+		"DTA?'??'",
+	}
+
+	h := testHandler{}
+	for _, test := range tests {
+		if err := parse.Parse(strings.NewReader(test), &h); err != nil {
+			t.Error(err)
+		}
+	}
+}
 
 func TestParser(t *testing.T) {
 	h := testHandler{}
