@@ -25,6 +25,7 @@ func (s Segment) Tag() string {
 // Comp retrieves the ith composite.
 func (s Segment) Comp(i int) Composite {
 	scanner := bufio.NewScanner(strings.NewReader(string(s)))
+	scanner.Buffer(make([]byte, 64), 1024)
 	scanner.Split(delimiter('+'))
 
 	j := 0
@@ -41,6 +42,7 @@ func (s Segment) Comp(i int) Composite {
 // Elem retrieves the ith element.
 func (e Composite) Elem(i int) string {
 	scanner := bufio.NewScanner(strings.NewReader(string(e)))
+	scanner.Buffer(make([]byte, 64), 1024)
 	scanner.Split(delimiter(':'))
 
 	j := 0
