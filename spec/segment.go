@@ -1,7 +1,6 @@
 package spec
 
 import (
-	"bufio"
 	"strings"
 )
 
@@ -24,9 +23,7 @@ func (s Segment) Tag() string {
 
 // Comp retrieves the ith composite.
 func (s Segment) Comp(i int) Composite {
-	scanner := bufio.NewScanner(strings.NewReader(string(s)))
-	scanner.Buffer(make([]byte, 64), 1024)
-	scanner.Split(delimiter('+'))
+	scanner := newScanner(string(s), '+')
 
 	j := 0
 	for scanner.Scan() {
@@ -41,14 +38,12 @@ func (s Segment) Comp(i int) Composite {
 
 // Elem retrieves the ith element.
 func (e Composite) Elem(i int) string {
-	scanner := bufio.NewScanner(strings.NewReader(string(e)))
-	scanner.Buffer(make([]byte, 64), 1024)
-	scanner.Split(delimiter(':'))
+	scanner := newScanner(string(e), ':')
 
 	j := 0
 	for scanner.Scan() {
 		if j == i {
-			return scanner.Text()
+			return removeMetaChars.Replace(scanner.Text())
 		}
 		j++
 	}
@@ -56,20 +51,70 @@ func (e Composite) Elem(i int) string {
 	return ""
 }
 
-func delimiter(del byte) bufio.SplitFunc {
-	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		for i := range data {
-			if data[i] != del {
-				continue
-			}
-			if i > 0 && data[i-1] == '?' {
-				continue
-			}
-			return i + 1, data[:i], nil
-		}
-		if len(data) > 0 && data[len(data)-1] == '\'' {
-			return len(data), data[:len(data)-1], nil
-		}
-		return len(data), data, nil
+var removeMetaChars = strings.NewReplacer(
+	"?'", "'",
+	"??", "?",
+	"'", "",
+	"?", "",
+)
+
+type segmentScanner struct {
+	str  string
+	del  byte
+	text string
+}
+
+func newScanner(str string, del byte) *segmentScanner {
+	return &segmentScanner{
+		str: str,
+		del: del,
 	}
+}
+
+func (s *segmentScanner) Scan() bool {
+	if len(s.str) == 0 {
+		return false
+	}
+
+	tmp := s.str
+	var index int
+	for {
+		i := strings.IndexByte(tmp, s.del)
+		if i < 0 {
+			index += len(tmp)
+			break
+		}
+		index += i
+		if !isReleased([]byte(tmp), index, '?') {
+			break
+		}
+		index++
+		tmp = tmp[i+1:]
+	}
+
+	s.text = s.str[:index]
+	s.str = s.str[index:]
+
+	// if present remove delimiter
+	if len(s.str) > 0 {
+		s.str = s.str[1:]
+	}
+
+	return true
+}
+
+func (s *segmentScanner) Text() string {
+	return s.text
+}
+
+// isReleased checks if the character at index is released by
+// a release (escape) character in front of it.
+func isReleased(data []byte, index int, release byte) bool {
+
+	released := false
+	for i := index - 1; i >= 0 && data[i] == release; i-- {
+		released = !released
+	}
+
+	return released
 }

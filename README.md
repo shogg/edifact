@@ -115,7 +115,6 @@ func main() {
 ## Issues
 * meta characters are fixed to `UNA:+.? '`
 * UNA, UNB don't get evaluated
-* release (escape) character `?` is not fully implemented
 * `time.Time` can only parse DTM formats 102, 201, 203
 * only ORDERS and DESADV are included atm
 * multiple message format versions are not supported atm

@@ -19,9 +19,9 @@ RFF+ON+1'
 RFF+DQ+2'
 NAD+BY+++name+street+city++23436+xx'
 CPS+'
-LIN+1++product A:SA'
+LIN+1++Beck?'s:SA'
 QTY+12:10'
-LIN+2++product B:SA'
+LIN+2++Chantr??'
 QTY+12:20'
 CNT+2:1'
 UNT+9+1'
@@ -33,9 +33,9 @@ RFF+ON+1'
 RFF+DQ+2'
 NAD+BY+++name+street+city++23436+xx'
 CPS+'
-LIN+1++product A:SA'
+LIN+1++Beck?'s:SA'
 QTY+12:10'
-LIN+2++product B:SA'
+LIN+2++Chantr??'
 QTY+12:20'
 CNT+2:1'
 UNT+9+1'
@@ -67,14 +67,16 @@ func TestUnmarshal(t *testing.T) {
 	if ediData[0].Items[0].ItemNr != 1 {
 		t.Error("LIN+1 expected")
 	}
-	if ediData[0].Items[0].Description != "product A" {
-		t.Error("product A expected")
+	desc0 := ediData[0].Items[0].Description
+	if desc0 != "Beck's" {
+		t.Error("Beck's expected, was", desc0)
 	}
 	if ediData[0].Items[1].ItemNr != 2 {
 		t.Error("quantity 1 expected")
 	}
-	if ediData[0].Items[1].Description != "product B" {
-		t.Error("product B expected")
+	desc1 := ediData[0].Items[1].Description
+	if desc1 != "Chantr?" {
+		t.Error("Chantr? expected, was", desc1)
 	}
 }
 
