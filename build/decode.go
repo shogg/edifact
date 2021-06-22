@@ -8,7 +8,13 @@ import (
 	"time"
 )
 
-var typeTime = reflect.TypeOf(time.Time{})
+type unmarshaller interface {
+	UnmarshalEdifact(data []byte) error
+}
+
+var (
+	typeTime = reflect.TypeOf(time.Time{})
+)
 
 func decode(s string, v reflect.Value) error {
 
@@ -17,17 +23,11 @@ func decode(s string, v reflect.Value) error {
 	if p.Kind() != reflect.Ptr {
 		p = v.Addr()
 	}
-	unmarshal := p.MethodByName("UnmarshalEdifact")
-	if unmarshal.IsValid() {
+	if iface, ok := p.Interface().(unmarshaller); ok {
 		if p.IsNil() {
 			p.Set(reflect.New(p.Type().Elem()))
 		}
-		in := []reflect.Value{reflect.ValueOf([]byte(s))}
-		out := unmarshal.Call(in)
-		if out[0].IsNil() {
-			return nil
-		}
-		return out[0].Interface().(error)
+		return iface.UnmarshalEdifact([]byte(s))
 	}
 
 	// time.Time

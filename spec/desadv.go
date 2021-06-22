@@ -4,6 +4,7 @@ package spec
 var desadv = Msg("DESADV",
 	S("UNA", C, 1),
 	S("UNB", C, 1),
+	S("UNG", C, 1),
 	S("UNH", M, 1),
 	S("BGM", M, 1),
 	S("DTM", C, 10),
@@ -102,6 +103,7 @@ var desadv = Msg("DESADV",
 	),
 	S("CNT", C, 5),
 	S("UNT", M, 1),
+	S("UNE", C, 1),
 	S("UNZ", C, 1),
 )
 

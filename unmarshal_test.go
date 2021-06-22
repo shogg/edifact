@@ -11,6 +11,7 @@ import (
 var ediMessage = `
 UNA:+.? '
 UNB+UNOC:3+sender+receiver+060620:0931+1++1234567'
+UNG+DESADV'
 
 UNH+1+DESADV:D:96A:UN'
 BGM+220+B10001'
@@ -39,6 +40,9 @@ LIN+2++Chantr??'
 QTY+12:20'
 CNT+2:1'
 UNT+9+1'
+
+UNE+'
+UNZ+'
 `
 
 type Message struct {

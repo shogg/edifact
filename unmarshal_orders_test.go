@@ -13,6 +13,7 @@ import (
 var ordersMessage = `
 UNA:+.? '
 UNB+UNOC:3+3020400000100:14+5909000580916:14+180607:1532+164702918+ORDERS'
+UNG+ORDERS'
 UNH+1+ORDERS:D:96A:UN:EAN008'
 BGM+220::9+0100623447+9'
 DTM+137:20180607:102'
@@ -37,6 +38,7 @@ PRI+AAA:3.31::NTP:1:EA'
 UNS+S'
 CNT+2:1'
 UNT+24+1'
+UNE+ORDERS'
 UNZ+1+164702918'`
 
 type Order struct {
@@ -48,9 +50,16 @@ type Order struct {
 }
 
 type OrderItem struct {
-	ItemNo   int    `edifact:"SG25/LIN+?"`
-	Quantity int    `edifact:"SG25/QTY+21:?"`
-	GTIN     string `edifact:"SG25/LIN+++?:EN"`
+	ItemNo   int  `edifact:"SG25/LIN+?"`
+	Quantity int  `edifact:"SG25/QTY+21:?"`
+	GTIN     GTIN `edifact:"SG25/LIN+++?:EN"`
+}
+
+type GTIN string
+
+func (gtin *GTIN) UnmarshalEdifact(data []byte) error {
+	*gtin = GTIN(data)
+	return nil
 }
 
 func TestUnmarshalOrders(t *testing.T) {

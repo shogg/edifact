@@ -3,6 +3,7 @@ package spec
 var orders = Msg("ORDERS",
 	S("UNA", C, 1),
 	S("UNB", C, 1),
+	S("UNG", C, 1),
 	S("UNH", M, 1),
 	S("BGM", M, 1),
 	S("DTM", C, 35),
@@ -273,6 +274,7 @@ var orders = Msg("ORDERS",
 		S("MOA", C, 2),
 	),
 	S("UNT", M, 1),
+	S("UNE", M, 1),
 	S("UNZ", C, 1),
 )
 
