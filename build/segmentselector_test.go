@@ -52,6 +52,30 @@ func TestSegmentSelector(t *testing.T) {
 			},
 		},
 		{
+			`SG10/SG17/LIN+++*`,
+			segmentSelector{
+				path:  "SG10/SG17/",
+				tag:   "LIN",
+				value: valueComponent{2, -1},
+			},
+		},
+		{
+			`SG10/SG17/LIN+++*:EN`,
+			segmentSelector{
+				path:  "SG10/SG17/",
+				tag:   "LIN",
+				value: valueComponent{2, -1},
+			},
+		},
+		{
+			`SG10/SG17/LIN+++:*`,
+			segmentSelector{
+				path:  "SG10/SG17/",
+				tag:   "LIN",
+				value: valueComponent{2, -1},
+			},
+		},
+		{
 			`SG10/SG17/QTY++:?`,
 			segmentSelector{
 				path:  "SG10/SG17/",

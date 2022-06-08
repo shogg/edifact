@@ -52,7 +52,7 @@ type Order struct {
 type OrderItem struct {
 	ItemNo   int  `edifact:"SG25/LIN+?"`
 	Quantity int  `edifact:"SG25/QTY+21:?"`
-	GTIN     GTIN `edifact:"SG25/LIN+++?:EN"`
+	GTIN     GTIN `edifact:"SG25/LIN+++*:EN"`
 }
 
 type GTIN string

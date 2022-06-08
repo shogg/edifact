@@ -59,18 +59,22 @@ func parseParamsAndValue(s string) ([]segmentSelectorParam, valueComponent) {
 	var params []segmentSelectorParam
 	var value valueComponent
 
-	elems := strings.Split(s, "+")
-	for i, e := range elems {
-
-		comps := strings.Split(e, ":")
-		for j, c := range comps {
-			if len(c) == 0 {
+	for i, comp := range strings.Split(s, "+") {
+		for j, elem := range strings.Split(comp, ":") {
+			if len(elem) == 0 {
 				continue
 			}
-			if c == "?" {
+			if elem == "?" {
 				value = valueComponent{
 					comp: i + 1,
 					elem: j,
+				}
+				continue
+			}
+			if elem == "*" {
+				value = valueComponent{
+					comp: i + 1,
+					elem: -1,
 				}
 				continue
 			}
@@ -78,7 +82,7 @@ func parseParamsAndValue(s string) ([]segmentSelectorParam, valueComponent) {
 			params = append(params, segmentSelectorParam{
 				comp:  i + 1,
 				elem:  j,
-				value: c,
+				value: elem,
 			})
 		}
 	}
@@ -90,6 +94,9 @@ func parseParamsAndValue(s string) ([]segmentSelectorParam, valueComponent) {
 func (sel segmentSelector) selectValue(seg spec.Segment) string {
 	if sel.value.comp == 0 {
 		return string(seg)
+	}
+	if sel.value.elem == -1 {
+		return string(seg.Comp(sel.value.comp))
 	}
 	return seg.Comp(sel.value.comp).Elem(sel.value.elem)
 }
