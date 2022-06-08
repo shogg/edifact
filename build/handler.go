@@ -44,7 +44,7 @@ func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment, loop bool) error
 	}
 
 	for _, n := range decodeNodes {
-		if err := n.decode(seg); err != nil {
+		if err := n.decode(specNode.Path(), seg); err != nil {
 			return err
 		}
 	}

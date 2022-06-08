@@ -3,8 +3,6 @@ package build
 import (
 	"fmt"
 	"reflect"
-	"unicode"
-	"unicode/utf8"
 
 	"github.com/shogg/edifact/spec"
 )
@@ -16,7 +14,6 @@ type decodeNode struct {
 	children    []*decodeNode
 	valProvider valueProvider
 	segSelector segmentSelector
-	specNode    *spec.Node
 }
 
 func newDecodeTree(specNode *spec.Node, target interface{}) (decodeTree, error) {
@@ -88,8 +85,7 @@ func addDecodeNode(
 		node.valProvider = &structProvider{}
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
-			r, _ := utf8.DecodeRuneInString(f.Name)
-			if !unicode.IsUpper(r) {
+			if !f.IsExported() {
 				continue
 			}
 
@@ -105,7 +101,6 @@ func addDecodeNode(
 				parent:      node,
 				segSelector: sel,
 				valProvider: &structFieldProvider{field: i},
-				specNode:    sn,
 			}
 			node.children = append(node.children, n)
 
@@ -123,8 +118,8 @@ func addDecodeNode(
 	return node
 }
 
-func (node *decodeNode) decode(seg spec.Segment) error {
-	if !node.segSelector.matches(node.specNode, seg) {
+func (node *decodeNode) decode(path string, seg spec.Segment) error {
+	if !node.segSelector.matches(path, seg) {
 		return nil
 	}
 

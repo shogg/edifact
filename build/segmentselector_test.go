@@ -3,7 +3,7 @@ package build
 import (
 	"testing"
 
-	"github.com/go-test/deep"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSegmentSelector(t *testing.T) {
@@ -16,7 +16,7 @@ func TestSegmentSelector(t *testing.T) {
 			`DTM+4|5`,
 			segmentSelector{
 				tag:    "DTM",
-				params: []segmentSelectorParam{{0, 0, "4|5"}},
+				params: []segmentSelectorParam{{1, 0, "4|5"}},
 			},
 		},
 		{
@@ -24,7 +24,7 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:   "SG1/",
 				tag:    "RFF",
-				params: []segmentSelectorParam{{0, 0, "100"}},
+				params: []segmentSelectorParam{{1, 0, "100"}},
 			},
 		},
 		{
@@ -32,7 +32,7 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:   "SG1/",
 				tag:    "RFF",
-				params: []segmentSelectorParam{{0, 0, "300|301"}},
+				params: []segmentSelectorParam{{1, 0, "300|301"}},
 			},
 		},
 		{
@@ -40,7 +40,7 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:  "SG10/SG17/",
 				tag:   "LIN",
-				value: valueComponent{0, 0},
+				value: valueComponent{1, 0},
 			},
 		},
 		{
@@ -48,7 +48,7 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:  "SG10/SG17/",
 				tag:   "LIN",
-				value: valueComponent{2, 0},
+				value: valueComponent{3, 0},
 			},
 		},
 		{
@@ -56,15 +56,16 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:  "SG10/SG17/",
 				tag:   "LIN",
-				value: valueComponent{2, -1},
+				value: valueComponent{3, -1},
 			},
 		},
 		{
 			`SG10/SG17/LIN+++*:EN`,
 			segmentSelector{
-				path:  "SG10/SG17/",
-				tag:   "LIN",
-				value: valueComponent{2, -1},
+				path:   "SG10/SG17/",
+				tag:    "LIN",
+				params: []segmentSelectorParam{{3, 1, "EN"}},
+				value:  valueComponent{3, -1},
 			},
 		},
 		{
@@ -72,7 +73,7 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:  "SG10/SG17/",
 				tag:   "LIN",
-				value: valueComponent{2, -1},
+				value: valueComponent{3, -1},
 			},
 		},
 		{
@@ -80,15 +81,13 @@ func TestSegmentSelector(t *testing.T) {
 			segmentSelector{
 				path:  "SG10/SG17/",
 				tag:   "QTY",
-				value: valueComponent{1, 1},
+				value: valueComponent{2, 1},
 			},
 		},
 	}
 
 	for _, test := range tests {
 		sb := parseSegmentSelector(test.structTag)
-		if diff := deep.Equal(test.expected, sb); diff != nil {
-			t.Error(diff)
-		}
+		assert.Equal(t, test.expected, sb)
 	}
 }

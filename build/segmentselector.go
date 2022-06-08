@@ -102,12 +102,12 @@ func (sel segmentSelector) selectValue(seg spec.Segment) string {
 }
 
 // matches returns true if segment group path, segment tag and segment selector parameters matches.
-func (sel segmentSelector) matches(node *spec.Node, seg spec.Segment) bool {
+func (sel segmentSelector) matches(path string, seg spec.Segment) bool {
 
 	if sel.tag != seg.Tag() {
 		return false
 	}
-	if sel.path != node.Path() {
+	if sel.path != path {
 		return false
 	}
 
