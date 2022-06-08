@@ -95,9 +95,18 @@ func (node *Node) Path() string {
 		buf.WriteString(sg.Tag)
 		buf.WriteByte('/')
 	}
-	node.path = new(string)
-	*node.path = buf.String()
+	path := buf.String()
+	node.path = &path
 	return *node.path
+}
+
+// Key segment group path and segment tag.
+func (node *Node) Key() string {
+	var buf strings.Builder
+	buf.WriteString(node.Path())
+	buf.WriteByte('/')
+	buf.WriteString(node.Tag)
+	return buf.String()
 }
 
 // SegmentGroups segment group path.

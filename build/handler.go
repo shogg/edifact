@@ -26,7 +26,7 @@ func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment, loop bool) error
 		}
 	}
 
-	decodeNodes := h.decodeTree[specNode]
+	decodeNodes := h.decodeTree[specNode.Key()]
 
 	if specNode.Tag == "UNH" {
 		for _, n := range decodeNodes {
@@ -35,7 +35,7 @@ func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment, loop bool) error
 	}
 
 	if loop {
-		parentNodes := h.decodeTree[specNode.Parent]
+		parentNodes := h.decodeTree[specNode.Parent.Key()]
 		for _, p := range parentNodes {
 			for _, c := range p.children {
 				c.newValue()

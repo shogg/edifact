@@ -9,7 +9,7 @@ import (
 	"github.com/shogg/edifact/spec"
 )
 
-type decodeTree map[*spec.Node][]*decodeNode
+type decodeTree map[string][]*decodeNode
 
 type decodeNode struct {
 	parent      *decodeNode
@@ -39,9 +39,7 @@ func (tree decodeTree) add(specNode *spec.Node, node *decodeNode) {
 	if specNode == nil {
 		return
 	}
-	list := tree[specNode]
-	list = append(list, node)
-	tree[specNode] = list
+	tree[specNode.Key()] = append(tree[specNode.Key()], node)
 }
 
 func (node *decodeNode) setValue(v reflect.Value) {
@@ -113,7 +111,7 @@ func addDecodeNode(
 
 			tree.add(sn, n)
 
-			addDecodeNode(tree, n, specNode, f.Type)
+			addDecodeNode(tree, n, sn, f.Type)
 		}
 	default:
 		return nil
