@@ -74,7 +74,7 @@ func TestParser(t *testing.T) {
 
 type testHandler struct{}
 
-func (h *testHandler) Handle(node *spec.Node, s spec.Segment, loop bool) error {
+func (h *testHandler) Handle(node *spec.Node, s spec.Segment) error {
 	fmt.Printf("%s%s\n", formatSegmentGroups(node), s)
 	return nil
 }

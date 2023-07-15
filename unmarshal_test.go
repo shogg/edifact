@@ -1,6 +1,8 @@
 package edifact_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -82,6 +84,12 @@ func TestUnmarshal(t *testing.T) {
 	if desc1 != "Chantr?" {
 		t.Error("Chantr? expected, was", desc1)
 	}
+
+	data, err := json.MarshalIndent(ediData, "", "\t")
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(data))
 }
 
 func BenchmarkUnmarshal(b *testing.B) {

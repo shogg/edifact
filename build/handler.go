@@ -16,7 +16,7 @@ func NewHandler(target interface{}) *Handler {
 }
 
 // Handle edifact.Handler implementation.
-func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment, loop bool) error {
+func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment) error {
 
 	if h.decodeTree == nil {
 		var err error
@@ -34,6 +34,7 @@ func (h *Handler) Handle(specNode *spec.Node, seg spec.Segment, loop bool) error
 		}
 	}
 
+	loop := specNode.Parent.FirstChild == specNode
 	if loop {
 		parentNodes := h.decodeTree[specNode.Parent.Key()]
 		for _, p := range parentNodes {

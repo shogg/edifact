@@ -13,7 +13,7 @@ func TestTransition(t *testing.T) {
 	var err error
 	node := spec.Get("DESADV")
 	for i, exp := range expected {
-		node, _, err = node.Transition(exp)
+		node, err = node.Transition(exp)
 		if err != nil {
 			t.Fatal(err)
 		}

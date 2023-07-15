@@ -59,13 +59,13 @@ func Parse(r io.Reader, h Handler) error {
 		}
 
 		if node != nil {
-			next, loop, err := node.Transition(seg.Tag())
+			next, err := node.Transition(seg.Tag())
 			if err != nil {
 				return p.annotate(err)
 			}
 			node = next
 
-			if err := h.Handle(node, seg, loop); err != nil {
+			if err := h.Handle(node, seg); err != nil {
 				return p.annotate(err)
 			}
 		}

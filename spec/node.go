@@ -143,7 +143,7 @@ func (node *Node) FindNode(path, tag string) *Node {
 	}
 
 	var s *Node
-	node.iterate(false, true, func(n *Node, l bool) bool {
+	node.findNode(func(n *Node) bool {
 		if n.Tag == tag && n.Path() == path {
 			s = n
 			return true
@@ -153,48 +153,22 @@ func (node *Node) FindNode(path, tag string) *Node {
 	return s
 }
 
-// Transition switch to next node with matching segment tag.
-func (node *Node) Transition(tag string) (*Node, bool, error) {
+// Iteration order: (1) firstChild (!leave), (2) sibling, (3) parent (leave)
+//
+//	-->o-->o
+//	(1)|\
+//	   v \(3)
+//	   o-->o
+//	   (2)
+func (node *Node) findNode(f func(*Node) bool) {
 
-	if node.Tag == tag {
-		return node, false, nil
-	}
-
-	var s *Node
-	var loop bool
-	node.iterate(true, false, func(n *Node, l bool) bool {
-		if n.Tag == tag {
-			s = n
-			loop = l
-			return true
-		}
-		return false
-	})
-
-	if s == nil {
-		return nil, false, fmt.Errorf("%w: %s", ErrUnexpectedSegment, tag)
-	}
-	return s, loop, nil
-}
-
-// Iteration order: (1) child, (2) sibling, (3) parent sibling.
-// --->o -->o
-//  (1)|  \
-//     v   \(3)
-//     o--->o
-//     (2)
-func (node *Node) iterate(loop, ignoreM bool, f func(*Node, bool) bool) {
-
-	var leave, forceLeave bool
+	var leave bool
 
 	n := node
 	for n != nil {
-
-		l := false
-		if n.FirstChild != nil && !forceLeave && (!leave || loop) {
+		if n.FirstChild != nil && !leave {
 			n = n.FirstChild
 			leave = false
-			l = true
 		} else if n.Sibling != nil {
 			n = n.Sibling
 			leave = false
@@ -205,14 +179,60 @@ func (node *Node) iterate(loop, ignoreM bool, f func(*Node, bool) bool) {
 			return
 		}
 
-		if f(n, l) {
+		if f(n) {
+			return
+		}
+	}
+}
+
+// Transition switch to next node with matching segment tag.
+func (node *Node) Transition(tag string) (*Node, error) {
+
+	if node.Tag == tag {
+		return node, nil
+	}
+
+	var s *Node
+	node.transition(func(n *Node) bool {
+		if n.Tag == tag {
+			s = n
+			return true
+		}
+		return false
+	})
+
+	if s == nil {
+		return nil, fmt.Errorf("%w: %s", ErrUnexpectedSegment, tag)
+	}
+	return s, nil
+}
+
+func (node *Node) transition(f func(*Node) bool) {
+
+	var leave bool
+
+	n := node
+	for n != nil {
+		if n.FirstChild != nil && !leave {
+			n = n.FirstChild
+			leave = false
+		} else if n.Sibling != nil {
+			n = n.Sibling
+			leave = false
+		} else if n.Parent != nil {
+			n = n.Parent
+			leave = false
+		} else {
 			return
 		}
 
-		forceLeave = false
-		if n.Required == M && !ignoreM {
-			forceLeave = true
+		if f(n) {
+			return
+		}
+
+		if n.Required == M {
 			n = n.Parent
+			leave = true
 		}
 	}
 }
