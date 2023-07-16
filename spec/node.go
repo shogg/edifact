@@ -162,19 +162,18 @@ func (node *Node) FindNode(path, tag string) *Node {
 //	   (2)
 func (node *Node) findNode(f func(*Node) bool) {
 
-	var leave bool
+	var leaveSG bool
 
 	n := node
-	for n != nil {
-		if n.FirstChild != nil && !leave {
+	for {
+		if n.FirstChild != nil && !leaveSG {
 			n = n.FirstChild
-			leave = false
 		} else if n.Sibling != nil {
 			n = n.Sibling
-			leave = false
+			leaveSG = false
 		} else if n.Parent != nil {
 			n = n.Parent
-			leave = true
+			leaveSG = true
 		} else {
 			return
 		}
@@ -209,19 +208,18 @@ func (node *Node) Transition(tag string) (*Node, error) {
 
 func (node *Node) transition(f func(*Node) bool) {
 
-	var leave bool
+	var leaveSG bool
 
 	n := node
-	for n != nil {
-		if n.FirstChild != nil && !leave {
+	for {
+		if n.FirstChild != nil && !leaveSG {
 			n = n.FirstChild
-			leave = false
 		} else if n.Sibling != nil {
 			n = n.Sibling
-			leave = false
+			leaveSG = false
 		} else if n.Parent != nil {
 			n = n.Parent
-			leave = false
+			leaveSG = false
 		} else {
 			return
 		}
@@ -232,7 +230,7 @@ func (node *Node) transition(f func(*Node) bool) {
 
 		if n.Required == M {
 			n = n.Parent
-			leave = true
+			leaveSG = true
 		}
 	}
 }
