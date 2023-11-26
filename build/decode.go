@@ -50,24 +50,40 @@ func decode(s string, v reflect.Value) error {
 		}
 		v.SetBool(b)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if s == "" {
+			v.SetInt(0)
+			return nil
+		}
 		n, err := strconv.ParseInt(s, 10, 64)
 		if err != nil {
 			return err
 		}
 		v.SetInt(n)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		if s == "" {
+			v.SetUint(0)
+			return nil
+		}
 		n, err := strconv.ParseUint(s, 10, 64)
 		if err != nil {
 			return err
 		}
 		v.SetUint(n)
 	case reflect.Float32, reflect.Float64:
+		if s == "" {
+			v.SetFloat(0.0)
+			return nil
+		}
 		n, err := strconv.ParseFloat(s, 64)
 		if err != nil {
 			return err
 		}
 		v.SetFloat(n)
 	case reflect.Complex64, reflect.Complex128:
+		if s == "" {
+			v.SetComplex(0i)
+			return nil
+		}
 		n, err := strconv.ParseComplex(s, 128)
 		if err != nil {
 			return err
