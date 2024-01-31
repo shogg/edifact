@@ -89,6 +89,11 @@ func decode(s string, v reflect.Value) error {
 			return err
 		}
 		v.SetComplex(n)
+	case reflect.Slice:
+		zeroValue := reflect.Zero(v.Type().Elem())
+		v.Set(reflect.Append(v, zeroValue))
+		lastEntry := v.Index(v.Len() - 1)
+		return decode(s, lastEntry)
 	default:
 		return fmt.Errorf("%w: %s", ErrNotImplemented, v.Type())
 	}
