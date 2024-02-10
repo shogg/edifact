@@ -37,7 +37,7 @@ func init() {
 }
 ```
 ## User defined data structures
-Currently only `struct` is supported (and array, slice and pointer of struct). The tag of a struct field specifies where data is located in an edifact document. All annotated information must match to make segment data suitable (segment groups, segment tag, fixed data in elements). A question mark `?` annotates the position of data.
+Currently only `struct` is supported (and array, slice and pointer of struct). The tag of a struct field specifies where data is located in an edifact document. All annotated information must match to make segment data suitable (segment groups, segment tag, fixed data in elements). A question mark `?` annotates the relevant data element separated by `:`. The type of the target value decides how to parse. Simple data types are implemented, more complex ones need to implement `edifact.Marshaller`. A star `*` annotates a composite of elements, an `edifact.Marshaller` is needed to parse. If no `?` or `*` is present, the `edifact.Marshaller` will receive the full segment with tag and terminator.
 
 Arrays and slices in a struct can specify a segment group path like this `edifact:"SG10/SG17"`. Each time a segment group repeats in the edifact data a new array/slice element is inserted.
 ```go
