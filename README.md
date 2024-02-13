@@ -116,7 +116,8 @@ func main() {
 * meta characters are fixed to `UNA:+.? '`
 * UNA, UNB don't get evaluated
 * `time.Time` can only parse DTM formats 102, 201, 203
-* only ORDERS and DESADV are included atm
+* only ORDERS and DESADV are included atm but you can register your own specs
 * multiple message format versions are not supported atm
+* max. segment repetitions is part of the spec but is ignored atm
 
 Contributions are welcome.
