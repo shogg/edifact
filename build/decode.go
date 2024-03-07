@@ -81,7 +81,7 @@ func decode(s string, v reflect.Value) error {
 		v.SetFloat(n)
 	case reflect.Complex64, reflect.Complex128:
 		if s == "" {
-			v.SetComplex(0i)
+			v.SetComplex(0)
 			return nil
 		}
 		n, err := strconv.ParseComplex(s, 128)
