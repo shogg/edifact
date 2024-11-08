@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/shogg/edifact"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var ediMessage = `
@@ -48,6 +50,7 @@ UNZ+'
 `
 
 type Message struct {
+	ID         string    `edifact:"UNH+?"`
 	Date       time.Time `edifact:"DTM+17|18"`
 	DeliveryNr string    `edifact:"SG1/RFF+VN|DQ+?"`
 	OrderNr    int       `edifact:"SG1/RFF+ON+?"`
@@ -58,6 +61,15 @@ type Item struct {
 	ItemNr      int    `edifact:"SG10/SG17/LIN+?"`
 	Description string `edifact:"SG10/SG17/LIN+++?"`
 	Quantity    int    `edifact:"SG10/SG17/QTY+12:?"`
+}
+
+func TestUnmarshalIssue14(t *testing.T) {
+	document := strings.NewReader(ediMessage)
+	var messages []Message
+	err := edifact.Unmarshal(document, &messages)
+	require.NoError(t, err)
+	assert.NotEmpty(t, messages)
+	assert.Equal(t, "1", messages[0].ID)
 }
 
 func TestUnmarshal(t *testing.T) {

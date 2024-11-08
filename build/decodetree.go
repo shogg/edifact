@@ -27,7 +27,7 @@ func newDecodeTree(specNode *spec.Node, target interface{}) (decodeTree, error) 
 	v = v.Elem()
 	root := addDecodeNode(tree, nil, specNode, v.Type())
 	root.setValue(v)
-	tree.add(specNode, root)
+	tree.addRoot(specNode, root)
 
 	return tree, nil
 }
@@ -37,6 +37,9 @@ func (tree decodeTree) add(specNode *spec.Node, node *decodeNode) {
 		return
 	}
 	tree[specNode.Key()] = append(tree[specNode.Key()], node)
+}
+func (tree decodeTree) addRoot(specNode *spec.Node, root *decodeNode) {
+	tree[specNode.Key()] = append([]*decodeNode{root}, tree[specNode.Key()]...)
 }
 
 func (node *decodeNode) setValue(v reflect.Value) {
