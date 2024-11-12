@@ -87,7 +87,7 @@ func segments(delimiter, release byte) bufio.SplitFunc {
 				return 0, nil, nil
 			}
 			index += i
-			if !isReleased(d, i, release) {
+			if !spec.IsReleased(d, i, release) {
 				break
 			}
 			index++
@@ -96,14 +96,4 @@ func segments(delimiter, release byte) bufio.SplitFunc {
 
 		return index + 1, data[:index+1], nil
 	}
-}
-
-func isReleased(data []byte, index int, release byte) bool {
-
-	released := false
-	for i := index - 1; i >= 0 && data[i] == release; i-- {
-		released = !released
-	}
-
-	return released
 }

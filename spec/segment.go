@@ -85,7 +85,7 @@ func (s *segmentScanner) Scan() bool {
 			break
 		}
 		index += i
-		if !isReleased([]byte(tmp), index, '?') {
+		if !IsReleased([]byte(tmp), index, '?') {
 			break
 		}
 		index++
@@ -107,9 +107,9 @@ func (s *segmentScanner) Text() string {
 	return s.text
 }
 
-// isReleased checks if the character at index is released by
+// IsReleased checks if the character at index is released by
 // a release (escape) character in front of it.
-func isReleased(data []byte, index int, release byte) bool {
+func IsReleased(data []byte, index int, release byte) bool {
 
 	released := false
 	for i := index - 1; i >= 0 && data[i] == release; i-- {
