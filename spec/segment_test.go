@@ -13,9 +13,11 @@ func TestReleaseChar(t *testing.T) {
 		"UNH?++1+ORDERS:D:96A:UN'",
 		"UNH??+1+ORDERS:D:96A:UN'",
 		"UNH???++1+ORDERS:D:96A:UN'",
+		"UNH?+?++1+ORDERS:D:96A:UN'",
 		"UNH+1+ORDERS?::D:96A:UN'",
 		"UNH+1+ORDERS??:D:96A:UN'",
 		"UNH+1+ORDERS???::D:96A:UN'",
+		"UNH+1+ORDERS?:?::D:96A:UN'",
 		"UNH+1+ORDER?'S:D:96A:UN'",
 		"UNH+1+ORDER???'S:D:96A:UN'",
 	}
@@ -30,7 +32,7 @@ func TestReleaseChar(t *testing.T) {
 
 func TestSegment(t *testing.T) {
 
-	seg := spec.Segment("UNH+1+?+ORDERS:D:96A:UN'")
+	seg := spec.Segment("UNH+1+?+?+ORDER?'S???:?::D:96A:UN'")
 
 	tests := []struct {
 		c, e     int
@@ -40,7 +42,7 @@ func TestSegment(t *testing.T) {
 		{0, 1, ""},
 		{1, 0, "1"},
 		{1, 1, ""},
-		{2, 0, "+ORDERS"},
+		{2, 0, "++ORDER'S?::"},
 		{2, 1, "D"},
 		{2, 3, "UN"},
 		{3, 0, ""},

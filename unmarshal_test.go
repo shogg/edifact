@@ -26,7 +26,7 @@ NAD+BY+++name+street+city++23436+xx'
 CPS+'
 LIN+1++Beck?'s:SA'
 QTY+12:10'
-LIN+2++Chantr??'
+LIN+2++?:?+?+Chantr??'
 QTY+12:20'
 CNT+2:1'
 UNT+9+1'
@@ -93,8 +93,8 @@ func TestUnmarshal(t *testing.T) {
 		t.Error("quantity 1 expected")
 	}
 	desc1 := ediData[0].Items[1].Description
-	if desc1 != "Chantr?" {
-		t.Error("Chantr? expected, was", desc1)
+	if desc1 != ":++Chantr?" {
+		t.Error(":++Chantr? expected, was", desc1)
 	}
 
 	data, err := json.MarshalIndent(ediData, "", "\t")

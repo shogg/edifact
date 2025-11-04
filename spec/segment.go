@@ -85,7 +85,7 @@ func (s *segmentScanner) Scan() bool {
 			break
 		}
 		index += i
-		if !IsReleased([]byte(tmp), index, '?') {
+		if !IsReleased([]byte(tmp), i, '?') {
 			break
 		}
 		index++
